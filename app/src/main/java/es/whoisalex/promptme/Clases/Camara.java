@@ -12,14 +12,11 @@ import android.hardware.Camera;
 @SuppressWarnings("deprecation")
 public class Camara {
 
-    Context context;
-    Camera c;
-
+    private Context context;
     public Camara(){}
 
-    public Camara (Camera c, Context context){
+    public  Camara (Context context){
         this.context=context;
-        this.c=c;
     }
 
     /** Comprobamos que el dispositivo tiene una camara */
@@ -35,7 +32,8 @@ public class Camara {
 
     /** A safe way to get an instance of the Camera object. */
     public Camera getCameraInstance(){
-        c = null;
+        Camera c = null;
+
         try {
             c = Camera.open(); // attempt to get a Camera instance
         }

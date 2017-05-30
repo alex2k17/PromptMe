@@ -14,6 +14,7 @@ import static android.content.ContentValues.TAG;
  * Created by Alex on 30/05/2017.
  */
 
+@SuppressWarnings("deprecation")
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
