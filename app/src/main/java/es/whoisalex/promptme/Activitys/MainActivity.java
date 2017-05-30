@@ -1,7 +1,9 @@
-package es.whoisalex.promptme;
+package es.whoisalex.promptme.Activitys;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import es.whoisalex.promptme.R;
 
 public class MainActivity extends AppCompatActivity {
 
