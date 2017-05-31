@@ -1,7 +1,8 @@
-package es.whoisalex.promptme.Clases;
+package es.whoisalex.promptme.Clases.CameraAPI1;
 
 import android.content.Context;
 import android.hardware.Camera;
+import android.media.MediaRecorder;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -16,19 +17,18 @@ import static android.content.ContentValues.TAG;
 
 @SuppressWarnings("deprecation")
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+
     private SurfaceHolder mHolder;
     private Camera mCamera;
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
         mCamera = camera;
-
-        // Install a SurfaceHolder.Callback so we get notified when the
-        // underlying surface is created and destroyed.
+        mCamera.setDisplayOrientation(90);
         mHolder = getHolder();
         mHolder.addCallback(this);
         // deprecated setting, but required on Android versions prior to 3.0
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        mHolder.setType(SurfaceHolder.SURFACE_TYPE_NORMAL);
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -42,7 +42,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // empty. Take care of releasing the Camera preview in your activity.
+
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -60,11 +60,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } catch (Exception e){
             // ignore: tried to stop a non-existent preview
         }
-
-        // set preview size and make any resize, rotate or
-        // reformatting changes here
-
-        // start preview with new settings
         try {
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
