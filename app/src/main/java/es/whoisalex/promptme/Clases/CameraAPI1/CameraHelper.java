@@ -16,9 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Camera related utilities.
- */
+
 public class CameraHelper {
 
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -35,6 +33,8 @@ public class CameraHelper {
      * @param h     The height of the view.
      * @return Best match camera video size to fit in the view.
      */
+
+    //Metodo de la API de Android para establecer el tamaño de la camara
     public static Camera.Size getOptimalVideoSize(List<Camera.Size> supportedVideoSizes,
                                                   List<Camera.Size> previewSizes, int w, int h) {
         // Use a very small tolerance because we want an exact match.
@@ -71,7 +71,6 @@ public class CameraHelper {
             }
         }
 
-        // Cannot find video size that matches the aspect ratio, ignore the requirement
         if (optimalSize == null) {
             minDiff = Double.MAX_VALUE;
             for (Camera.Size size : videoSizes) {
@@ -84,43 +83,28 @@ public class CameraHelper {
         return optimalSize;
     }
 
-    /**
-     * @return the default camera on the device. Return null if there is no camera on the device.
-     */
+
     public static Camera getDefaultCameraInstance() {
         return Camera.open();
     }
 
 
-    /**
-     * @return the default rear/back facing camera on the device. Returns null if camera is not
-     * available.
-     */
     public static Camera getDefaultBackFacingCameraInstance() {
         return getDefaultCamera(Camera.CameraInfo.CAMERA_FACING_BACK);
     }
 
-    /**
-     * @return the default front facing camera on the device. Returns null if camera is not
-     * available.
-     */
+
     public static Camera getDefaultFrontFacingCameraInstance() {
         return getDefaultCamera(Camera.CameraInfo.CAMERA_FACING_FRONT);
     }
 
 
-    /**
-     *
-     * @param position Physical position of the camera i.e Camera.CameraInfo.CAMERA_FACING_FRONT
-     *                 or Camera.CameraInfo.CAMERA_FACING_BACK.
-     * @return the default camera on the device. Returns null if camera is not available.
-     */
     @TargetApi(Build.VERSION_CODES.GINGERBREAD)
     private static Camera getDefaultCamera(int position) {
-        // Find the total number of cameras available
+        // Buscamos el numero total de camaras del dispositivo
         int  mNumberOfCameras = Camera.getNumberOfCameras();
 
-        // Find the ID of the back-facing ("default") camera
+        // Buscamos el ID de la camara por defecto.
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         for (int i = 0; i < mNumberOfCameras; i++) {
             Camera.getCameraInfo(i, cameraInfo);
@@ -133,34 +117,25 @@ public class CameraHelper {
         return null;
     }
 
-    /**
-     * Creates a media file in the {@code Environment.DIRECTORY_PICTURES} directory. The directory
-     * is persistent and available to other applications like gallery.
-     *
-     * @param type Media type. Can be video or image.
-     * @return A file object pointing to the newly created file.
-     */
+
     public  static File getOutputMediaFile(int type){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
+        // Para estar seguros, debemos mirar que la SDCard este montada.
         if (!Environment.getExternalStorageState().equalsIgnoreCase(Environment.MEDIA_MOUNTED)) {
             return  null;
         }
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "CameraSample");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
+                Environment.DIRECTORY_PICTURES), "PromptMe");
 
-        // Create the storage directory if it does not exist
+        // Creamos la carpeta si no existe
         if (! mediaStorageDir.exists()){
             if (! mediaStorageDir.mkdirs()) {
-                Log.d("CameraSample", "failed to create directory");
+                Log.d("PromptMe", "Error al crear la carpeta");
                 return null;
             }
         }
 
-        // Create a media file name
+        // creamos el nombre para el archivo
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE){

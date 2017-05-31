@@ -2,15 +2,18 @@ package es.whoisalex.promptme.Activitys;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -20,11 +23,6 @@ import es.whoisalex.promptme.R;
 import static es.whoisalex.promptme.Clases.CameraAPI1.CameraHelper.MEDIA_TYPE_VIDEO;
 import static es.whoisalex.promptme.Clases.CameraAPI1.CameraHelper.getOutputMediaFile;
 
-/**
- *  This activity uses the camera/camcorder as the A/V source for the {@link android.media.MediaRecorder} API.
- *  A {@link android.view.TextureView} is used as the camera preview which limits the code to API 14+. This
- *  can be easily replaced with a {@link android.view.SurfaceView} to run on older devices.
- */
 public class MainActivity extends Activity {
 
     private Camera mCamera = null;
@@ -59,6 +57,7 @@ public class MainActivity extends Activity {
                 }else{
                    if (prepareVideoRecorder()){
                        mMediaRecorder.start();
+                       msgShow();
                        isRecording = true;
 
                    }else{
@@ -69,22 +68,32 @@ public class MainActivity extends Activity {
         });
     }
 
+    //Lanzamos el mensaje
+    private void msgShow(){
+        Context context = getApplicationContext();
+        CharSequence text = "Mensaje predefinido; Lorem ipsum dolor sit amet, " +
+                "consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa";
+        int duration = Toast.LENGTH_LONG;
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.setGravity(Gravity.CENTER_HORIZONTAL| Gravity.BOTTOM, 0, 100);
+        toast.show();
+    }
+
     public static Camera getCameraInstance(){
         Camera c = null;
         try {
-            c = Camera.open(); // attempt to get a Camera instance
+            c = Camera.open(); // Instanciamos la camara
         }
         catch (Exception e){
-            // Camera is not available (in use or does not exist)
         }
-        return c; // returns null if camera is unavailable
+        return c;
     }
 
     private void releaseMediaRecorder(){
         if (mMediaRecorder != null) {
             stopRecording();
-            mMediaRecorder.reset();   // clear recorder configuration
-            mMediaRecorder.release(); // release the recorder object
+            mMediaRecorder.reset();   // limpiamos la configuracion del grabador
+            mMediaRecorder.release();
             mMediaRecorder = null;
         }
     }
@@ -117,7 +126,7 @@ public class MainActivity extends Activity {
         try{
             mMediaRecorder.stop();
         }catch(RuntimeException stopException){
-            //handle cleanup here
+            Log.d("ERROR", "Error al parar la grabacion: " + stopException.getMessage());
         }
         mCamera.lock();
     }
@@ -143,11 +152,11 @@ public class MainActivity extends Activity {
         try{
             mMediaRecorder.prepare();
         }catch (IllegalStateException e){
-            Log.d("ERROR", "IllegalStateException preparing MediaRecorder: " + e.getMessage());
+            Log.d("ERROR", "IllegalStateException preparando MediaRecorder: " + e.getMessage());
             releaseMediaRecorder();
             return false;
         }catch (IOException e){
-            Log.d("ERROR", "IOException preparing MediaRecorder: " + e.getMessage());
+            Log.d("ERROR", "IOException preparando MediaRecorder: " + e.getMessage());
             releaseMediaRecorder();
             return false;
         }
