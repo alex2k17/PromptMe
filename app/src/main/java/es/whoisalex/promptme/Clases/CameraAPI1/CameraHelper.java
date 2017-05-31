@@ -5,7 +5,11 @@ package es.whoisalex.promptme.Clases.CameraAPI1;
  */
 
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.Intent;
 import android.hardware.Camera;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
@@ -15,6 +19,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+
+import static android.content.ContentValues.TAG;
 
 
 public class CameraHelper {
@@ -85,7 +92,7 @@ public class CameraHelper {
 
 
     public static Camera getDefaultCameraInstance() {
-        return Camera.open();
+        return Camera.open(1);
     }
 
 
