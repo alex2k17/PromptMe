@@ -49,12 +49,18 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 mCamera.setParameters(params);
             }
         }
+        requestLayout();
     }
 
     public SurfaceHolder getmHolder(){
         return mHolder;
 
     }
+
+    public Size getPreviewSize() {
+        return mPreviewSize;
+    }
+
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -146,8 +152,8 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         if(mCamera != null) {
             Camera.Parameters parameters = mCamera.getParameters();
-            parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-            requestLayout();
+            Size previewSize = getOptimalPreviewSize(parameters.getSupportedPreviewSizes(), w, h);
+            parameters.setPreviewSize(previewSize.width, previewSize.height);
 
             mCamera.setParameters(parameters);
             mCamera.startPreview();

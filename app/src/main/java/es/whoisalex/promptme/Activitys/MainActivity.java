@@ -21,11 +21,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import java.io.File;
 import java.io.IOException;
+
 import es.whoisalex.promptme.Clases.CameraAPI1.CameraPreview;
 import es.whoisalex.promptme.R;
 
+import static android.R.attr.duration;
 import static es.whoisalex.promptme.Clases.CameraAPI1.CameraHelper.MEDIA_TYPE_VIDEO;
 import static es.whoisalex.promptme.Clases.CameraAPI1.CameraHelper.getOutputMediaFile;
 
@@ -34,6 +37,7 @@ public class MainActivity extends Activity {
     private Camera mCamera = null;
     private MediaRecorder mMediaRecorder;
     private TextView text;
+    private Toast toast;
 
     private boolean isRecording = false;
 
@@ -48,12 +52,7 @@ public class MainActivity extends Activity {
         ctx = this;
         act = this;
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        preview = new CameraPreview(this, (SurfaceView)findViewById(R.id.surfaceView));
-        preview.setLayoutParams(new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT));
-        ((FrameLayout) findViewById(R.id.layout)).addView(preview);
-        preview.setKeepScreenOn(true);
-
+        loadPreview();
 
         ImageButton imgClose = (ImageButton) findViewById(R.id.imgClose);
         imgClose.setOnClickListener(new View.OnClickListener() {
@@ -62,9 +61,11 @@ public class MainActivity extends Activity {
                 if (isRecording) {
                     releaseMediaRecorder();
                     isRecording = false;
-                    releaseCamera();
+                    resetCam();
+                    makeToast(getApplicationContext(), "Guardando...");
                     text.setText("");
                     text.setVisibility(View.INVISIBLE);
+
                 } else {
                     if (prepareVideoRecorder()) {
                         mMediaRecorder.start();
@@ -81,7 +82,7 @@ public class MainActivity extends Activity {
     //Lanzamos el mensaje
     private void msgShow() {
         text = (TextView) findViewById(R.id.texto);
-        Animation translatebu= AnimationUtils.loadAnimation(this, R.anim.animationfile);
+        Animation translatebu = AnimationUtils.loadAnimation(this, R.anim.animationfile);
         text.setText("Lorem ipsum dolor sit amet, consectetuer adipiscing elit." +
                 " Aenean commodo ligula eget dolor. Aenean massa." +
                 " Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. ");
@@ -97,7 +98,6 @@ public class MainActivity extends Activity {
         toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 100);
         toast.show();*/
     }
-
 
 
     public static Camera getCameraInstance() {
@@ -125,9 +125,19 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void resetCam() {
+
+        try {
+            mCamera.reconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     @Override
     protected void onPause() {
-        if(mCamera != null) {
+        if (mCamera != null) {
             isRecording = false;
             releaseMediaRecorder();
             mCamera.stopPreview();
@@ -137,22 +147,17 @@ public class MainActivity extends Activity {
         super.onPause();
     }
 
-    private void resetCam() {
-        mCamera.startPreview();
-        preview.setCamera(mCamera);
-    }
-
 
     @Override
     protected void onResume() {
         super.onResume();
         int numCams = Camera.getNumberOfCameras();
-        if(numCams > 0){
-            try{
+        if (numCams > 0) {
+            try {
                 mCamera = Camera.open(1);
                 mCamera.startPreview();
                 preview.setCamera(mCamera);
-            } catch (RuntimeException ex){
+            } catch (RuntimeException ex) {
             }
         }
     }
@@ -169,9 +174,7 @@ public class MainActivity extends Activity {
     private boolean prepareVideoRecorder() {
         if (mCamera == null) {
             mCamera = getCameraInstance();
-            //mCamera.setDisplayOrientation(90);
         }
-
         mMediaRecorder = new MediaRecorder();
 
         // Desbloqueamos la camara para que la pueda utilizar otro proceso y la asignamos a MediaRecorder
@@ -180,9 +183,7 @@ public class MainActivity extends Activity {
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
-        File f = getOutputMediaFile(MEDIA_TYPE_VIDEO);
-        mMediaRecorder.setOutputFile(getOutputMediaFile(MEDIA_TYPE_VIDEO).toString());
-        refreshGallery(f);
+        saveVideo(); //Guardamos el video en la galeria.
         mMediaRecorder.setPreviewDisplay(preview.getmHolder().getSurface());
         //Preparamos la configuracion
         try {
@@ -199,13 +200,35 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    public void loadPreview() {
+        preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceView));
+        preview.setLayoutParams(new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT));
+        ((FrameLayout) findViewById(R.id.layout)).addView(preview);
+        preview.setKeepScreenOn(true);
+    }
+
+    public void saveVideo() {
+        File f;
+        f = getOutputMediaFile(MEDIA_TYPE_VIDEO);
+        mMediaRecorder.setOutputFile(getOutputMediaFile(MEDIA_TYPE_VIDEO).toString());
+        refreshGallery(f);
+    }
+
+    public void makeToast(Context context, CharSequence text){
+        context = getApplicationContext();
+        int duration = Toast.LENGTH_LONG;
+        toast = Toast.makeText(context, text, duration);
+        toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 100);
+        toast.show();
+    }
+
     public void refreshGallery(File f) {
         MediaScannerConnection.scanFile(this,
                 new String[]{f.toString()}, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                     public void onScanCompleted(String path, Uri uri) {
-                        Log.i("ExternalStorage", "Scanned " + path + ":");
-                        Log.i("ExternalStorage", "-> uri=" + uri);
+                        Log.i("ExternalStorage", "Ruta: " + path + ":");
+                        Log.i("ExternalStorage", "-> uri= " + uri);
                     }
                 });
     }
