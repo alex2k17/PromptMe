@@ -3,6 +3,7 @@ package es.whoisalex.promptme.Activitys;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
@@ -14,8 +15,11 @@ import android.view.Gravity;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +33,7 @@ public class MainActivity extends Activity {
 
     private Camera mCamera = null;
     private MediaRecorder mMediaRecorder;
-    private Toast toast;
+    private TextView text;
 
     private boolean isRecording = false;
 
@@ -50,7 +54,7 @@ public class MainActivity extends Activity {
         ((FrameLayout) findViewById(R.id.layout)).addView(preview);
         preview.setKeepScreenOn(true);
 
-        //initCamera();
+
         ImageButton imgClose = (ImageButton) findViewById(R.id.imgClose);
         imgClose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,7 +63,8 @@ public class MainActivity extends Activity {
                     releaseMediaRecorder();
                     isRecording = false;
                     releaseCamera();
-                    toast.cancel();
+                    text.setText("");
+                    text.setVisibility(View.INVISIBLE);
                 } else {
                     if (prepareVideoRecorder()) {
                         mMediaRecorder.start();
@@ -75,13 +80,22 @@ public class MainActivity extends Activity {
 
     //Lanzamos el mensaje
     private void msgShow() {
-        Context context = getApplicationContext();
+        text = (TextView) findViewById(R.id.texto);
+        Animation translatebu= AnimationUtils.loadAnimation(this, R.anim.animationfile);
+        text.setText("Lorem ipsum dolor sit amet, consectetuer adipiscing elit." +
+                " Aenean commodo ligula eget dolor. Aenean massa." +
+                " Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. ");
+        text.setVisibility(View.VISIBLE);
+        text.setTextColor(Color.parseColor("#FF0000"));
+        text.startAnimation(translatebu);
+
+       /* Context context = getApplicationContext();
         CharSequence text = "Mensaje predefinido; Lorem ipsum dolor sit amet, " +
                 "consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa";
         int duration = Toast.LENGTH_LONG;
         toast = Toast.makeText(context, text, duration);
         toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 100);
-        toast.show();
+        toast.show();*/
     }
 
 

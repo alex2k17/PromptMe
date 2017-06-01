@@ -11,6 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+
+
     <ImageButton
         android:id="@+id/imgClose"
         android:layout_width="wrap_content"
@@ -18,5 +20,16 @@
         android:layout_gravity="center|bottom"
         android:background="@android:drawable/ic_media_play"
         android:padding="20dp" />
+
+    <TextView
+        android:id="@+id/texto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|bottom"
+        android:visibility="invisible"
+        android:ellipsize="end"
+        android:textSize="28dp"
+        android:textStyle="bold"
+        android:text="TextView" />
 
 </FrameLayout>
