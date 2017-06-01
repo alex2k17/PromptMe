@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
-    private final String TAG = "Preview";
+    private final String TAG = "CameraPreview";
 
     SurfaceView mSurfaceView;
     SurfaceHolder mHolder;
@@ -25,7 +25,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         super(context);
 
         mSurfaceView = sv;
-//        addView(mSurfaceView);
+        //addView(mSurfaceView);
 
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
@@ -38,14 +38,14 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
             requestLayout();
             mCamera.setDisplayOrientation(90);
-            // get Camera parameters
+            // Obtenemos los parametros de la camara.
             Camera.Parameters params = mCamera.getParameters();
 
             List<String> focusModes = params.getSupportedFocusModes();
             if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-                // set the focus mode
+                // Ponemos el auto focus
                 params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                // set Camera parameters
+                // Añadimos los parametros a la camara.
                 mCamera.setParameters(params);
             }
         }
@@ -58,9 +58,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // We purposely disregard child measurements because act as a
-        // wrapper to a SurfaceView that centers the camera preview instead
-        // of stretching it.
         final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
         final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
         setMeasuredDimension(width, height);
@@ -85,7 +82,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 previewHeight = mPreviewSize.height;
             }
 
-            // Center the child SurfaceView within the parent.
+            // Centramos al hijo SurfaceView dentro del padre
             if (width * previewHeight > height * previewWidth) {
                 final int scaledChildWidth = previewWidth * height / previewHeight;
                 child.layout((width - scaledChildWidth) / 2, 0,
@@ -99,8 +96,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
-        // The Surface has been created, acquire the camera and tell it where
-        // to draw.
         try {
             if (mCamera != null) {
                 mCamera.setPreviewDisplay(holder);
@@ -111,7 +106,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // Surface will be destroyed when we return, so stop the preview.
 
     }
 
@@ -126,7 +120,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
         int targetHeight = h;
 
-        // Try to find an size match aspect ratio and size
+        // Intentamos encontrar una relacion entre aspecto y tamaño
         for (Size size : sizes) {
             double ratio = (double) size.width / size.height;
             if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
@@ -136,7 +130,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             }
         }
 
-        // Cannot find the one match the aspect ratio, ignore the requirement
+        // Si no se puede encontrar la relacion entre aspecto y tamaño...
         if (optimalSize == null) {
             minDiff = Double.MAX_VALUE;
             for (Size size : sizes) {
