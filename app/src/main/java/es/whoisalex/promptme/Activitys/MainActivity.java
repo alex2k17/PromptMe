@@ -59,8 +59,6 @@ public class MainActivity extends Activity {
                 if (isRecording) {
                     closeToast();
                     //text.clearAnimation();
-                    text.setText("");
-                    text.setVisibility(View.INVISIBLE);
                     releaseMediaRecorder();
                     isRecording = false;
                     resetCam();
@@ -128,6 +126,10 @@ public class MainActivity extends Activity {
     }
 
     private void releaseMediaRecorder() {
+        if (text!=null) {
+            text.setText("");
+            text.setVisibility(View.INVISIBLE);
+        }
         if (mMediaRecorder != null) {
             stopRecording();
             mMediaRecorder.reset();   // limpiamos la configuracion del grabador
@@ -178,6 +180,10 @@ public class MainActivity extends Activity {
             }
         }
     }
+
+    @Override
+    public void onBackPressed() {}
+
 
     private void stopRecording() {
         try {
@@ -277,6 +283,4 @@ public class MainActivity extends Activity {
         }
         refreshGallery(videoFile);
     }
-
-
 }

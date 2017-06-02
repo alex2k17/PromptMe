@@ -26,10 +26,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|bottom"
-        android:visibility="invisible"
         android:ellipsize="end"
+        android:text="TextView"
         android:textSize="28dp"
         android:textStyle="bold"
-        android:text="TextView" />
+        android:visibility="invisible" />
 
 </FrameLayout>
