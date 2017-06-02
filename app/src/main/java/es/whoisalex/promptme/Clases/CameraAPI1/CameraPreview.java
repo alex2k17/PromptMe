@@ -3,10 +3,12 @@ package es.whoisalex.promptme.Clases.CameraAPI1;
 import java.io.IOException;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -20,9 +22,11 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     Size mPreviewSize;
     List<Size> mSupportedPreviewSizes;
     Camera mCamera;
+    Context context;
 
     public CameraPreview(Context context, SurfaceView sv) {
         super(context);
+        this.context=context;
 
         mSurfaceView = sv;
         //addView(mSurfaceView);
@@ -149,6 +153,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         return optimalSize;
     }
 
+
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         if(mCamera != null) {
             Camera.Parameters parameters = mCamera.getParameters();
@@ -159,5 +164,4 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             mCamera.startPreview();
         }
     }
-
 }
