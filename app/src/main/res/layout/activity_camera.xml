@@ -11,6 +11,37 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <FrameLayout
+        android:id="@+id/caja"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:background="@color/black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="false" >
+        <ScrollView
+            android:id="@+id/scrolltext"
+            android:layout_width="wrap_content"
+            android:layout_height="200dp">
+            <TextView
+                android:id="@+id/texto2"
+                android:paddingTop="50dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingBottom="50dp"
+                android:textSize="20dp"
+                android:textColor="#FAEBD7"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+        </ScrollView>
+        <ImageView
+            android:id="@+id/dot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:contentDescription="dot" />
+
+    </FrameLayout>
 
 
     <ImageButton
@@ -18,18 +49,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|bottom"
-        android:background="@android:drawable/ic_media_play"
+        android:background="@drawable/rec_off"
+        android:layout_marginBottom="20px"
         android:padding="20dp" />
 
-    <TextView
-        android:id="@+id/texto"
+    <ImageButton
+        android:id="@+id/imgAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center|bottom"
-        android:ellipsize="end"
-        android:text="TextView"
-        android:textSize="28dp"
-        android:textStyle="bold"
-        android:visibility="invisible" />
+        android:layout_gravity="left|bottom"
+        android:background="@drawable/add"
+        android:layout_marginBottom="20px"
+        android:layout_marginLeft="12dp"
+        android:padding="20dp" />
+
+    <ImageButton
+        android:id="@+id/imgLess"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|bottom"
+        android:background="@drawable/less"
+        android:layout_marginBottom="20px"
+        android:layout_marginLeft="80dp"
+        android:padding="20dp" />
 
 </FrameLayout>

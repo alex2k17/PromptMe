@@ -1,9 +1,13 @@
 package es.whoisalex.promptme.Activitys;
 
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaMetadataRetriever;
@@ -13,13 +17,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,12 +45,23 @@ public class MainActivity extends Activity {
     private Camera mCamera = null;
     private MediaRecorder mMediaRecorder;
     private TextView text;
+    private ScrollView scroll;
+    private ImageView punto;
+    private ImageButton imgClose, imgMoreSpeed, imgLessSpeed;
+    private ShapeDrawable sd;
     private File f;
     private Toast toast;
+    private FrameLayout caja;
+    private ObjectAnimator objectAnimator;
 
     private boolean isRecording = false;
     private boolean isSave = false;
+    private boolean isFinish = false;
     CameraPreview preview;
+    int width, height;
+    int speed=48000;
+    float dX, dY;
+    String texto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,14 +69,25 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_camera);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         loadPreview();
+        ViewTreeObserver vto = text.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener (new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                text.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                width = text.getWidth();
+                height = text.getHeight();
+                Log.e("Max", "width: " + width + ", " + height);
+            }
+        });
 
-        ImageButton imgClose = (ImageButton) findViewById(R.id.imgClose);
+        imgClose = (ImageButton) findViewById(R.id.imgClose);
         imgClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (isRecording) {
+                    imgClose.setBackgroundResource(R.drawable.rec_off);
                     closeToast();
-                    //text.clearAnimation();
+                    objectAnimator.cancel();
                     releaseMediaRecorder();
                     isRecording = false;
                     resetCam();
@@ -68,6 +97,7 @@ public class MainActivity extends Activity {
                 } else {
                     closeToast();
                     if (prepareVideoRecorder()) {
+                        imgClose.setBackgroundResource(R.drawable.rec_on);
                         mMediaRecorder.start();
                         msgShow();
                         isRecording = true;
@@ -79,34 +109,129 @@ public class MainActivity extends Activity {
         });
     }
 
-    //Lanzamos el mensaje
-    private void msgShow() {
-        text = (TextView) findViewById(R.id.texto);
-        Animation translatebu = AnimationUtils.loadAnimation(this, R.anim.animationfile);
-        translatebu.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
 
+    private void msgSpeedUp(){
+        imgMoreSpeed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (objectAnimator!=null)objectAnimator.cancel();
+                closeToast();
+                makeToast(getApplicationContext(),"Velocidad+", 200);
+                if (speed>=4001) {
+                    speed -= 4000;
+                    Log.i("ClickAdd","Velocidad: "+speed);
+                }
+                Log.i("ClickAdd","ScrollY: "+scroll.getScrollY());
+                if (isFinish){
+                    isFinish=false;
+                    animationText(speed, 0);
+                }else{
+                    animationText(speed, scroll.getScrollY());
+                }
             }
+        });
+    }
 
+    private void msgSpeedLess(){
+        imgLessSpeed.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onAnimationEnd(Animation animation) {
-                text.setText("");
-                text.setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
+            public void onClick(View v) {
+                if (objectAnimator != null) objectAnimator.cancel();
+                closeToast();
+                makeToast(getApplicationContext(), "Velocidad-", 200);
+                speed += 4000;
+                Log.i("ClickLess", "ScrollY: " + scroll.getScrollY());
+                if (isFinish){
+                    isFinish=false;
+                    animationText(speed, 0);
+                }else{
+                    animationText(speed, scroll.getScrollY());
+                }
 
             }
         });
-        text.setText("Lorem ipsum dolor sit amet, consectetuer adipiscing elit." +
-                " Aenean commodo ligula eget dolor. Aenean massa." +
-                " Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. ");
-        text.setVisibility(View.VISIBLE);
-        text.setTextColor(Color.parseColor("#FF0000"));
-        text.startAnimation(translatebu);
+    }
 
+    private void animationText(int speed, int scrollY){
+        objectAnimator = ObjectAnimator.ofInt(scroll, "scrollY", scrollY, text.length()+200).setDuration(speed);
+        objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                //Log.i("Animacion","Animacion: "+animation.getAnimatedValue());
+                if ((int) animation.getAnimatedValue()>=text.length()+100){
+                    animation.cancel();
+                    Log.e("TEXTLENGTH", "VALUE: "+text.length());
+                    isFinish=true;
+                }
+            }
+        });
+        objectAnimator.setInterpolator(new LinearInterpolator());
+        objectAnimator.start();
+    }
+
+    private void animateOnTouch(){
+        text.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        if (objectAnimator!=null)objectAnimator.cancel();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        animationText(speed, scroll.getScrollY());
+                        break;
+                    default:
+                        return false;
+                }
+                return true;
+            }
+        });
+    }
+
+    //Lanzamos el mensaje
+    private void msgShow() {
+        if (objectAnimator!=null)objectAnimator.cancel();
+        objectAnimator = ObjectAnimator.ofInt(scroll, "scrollY", 0, text.length()+200).setDuration(speed);
+        objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                //Log.i("Animacion","Animacion: "+animation.getAnimatedValue());
+                if ((int) animation.getAnimatedValue()==text.length()+100){
+                    animation.cancel();
+                }
+            }
+        });
+        objectAnimator.setInterpolator(new LinearInterpolator());
+        objectAnimator.start();
+    }
+
+
+    private void animateBox(){
+        punto.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                switch (event.getAction()) {
+
+                    case MotionEvent.ACTION_DOWN:
+
+                        dX = caja.getX() - event.getRawX();
+                        dY = caja.getY() - event.getRawY();
+                        break;
+
+                    case MotionEvent.ACTION_MOVE:
+
+                        caja.animate()
+                                .x(event.getRawX() + dX)
+                                .y(event.getRawY() + dY)
+                                .setDuration(0)
+                                .start();
+                        break;
+                    default:
+                        return false;
+                }
+                return true;
+            }
+        });
     }
 
     @Override
@@ -126,10 +251,6 @@ public class MainActivity extends Activity {
     }
 
     private void releaseMediaRecorder() {
-        if (text!=null) {
-            text.setText("");
-            text.setVisibility(View.INVISIBLE);
-        }
         if (mMediaRecorder != null) {
             stopRecording();
             mMediaRecorder.reset();   // limpiamos la configuracion del grabador
@@ -156,6 +277,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
+        if (objectAnimator!=null) objectAnimator.cancel();
         if (mCamera != null) {
             isRecording = false;
             releaseMediaRecorder();
@@ -181,10 +303,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override
-    public void onBackPressed() {}
-
-
     private void stopRecording() {
         try {
             mMediaRecorder.stop();
@@ -195,9 +313,7 @@ public class MainActivity extends Activity {
     }
 
     private boolean prepareVideoRecorder() {
-        if (mCamera == null) {
-            mCamera = getCameraInstance();
-        }
+        if (mCamera == null) mCamera = getCameraInstance();
         mMediaRecorder = new MediaRecorder();
 
         // Desbloqueamos la camara para que la pueda utilizar otro proceso y la asignamos a MediaRecorder
@@ -229,7 +345,33 @@ public class MainActivity extends Activity {
         preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceView));
         preview.setLayoutParams(new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT));
         ((FrameLayout) findViewById(R.id.layout)).addView(preview);
+        caja = (FrameLayout) findViewById(R.id.caja);
+        scroll = (ScrollView) findViewById(R.id.scrolltext);
+        text = (TextView) findViewById(R.id.texto2);
+        punto = (ImageView) findViewById(R.id.dot);
+        imgMoreSpeed = (ImageButton) findViewById(R.id.imgAdd);
+        imgLessSpeed = (ImageButton) findViewById(R.id.imgLess);
+        drawDot();
+        texto = "Al contrario del pensamiento popular, el texto de Lorem Ipsum no es simplemente texto aleatorio. Tiene sus raices en una pieza cl´sica de la literatura del Latin, que data del año 45 antes de Cristo, haciendo que este adquiera mas de 2000 años de antiguedad. Richard McClintock, un profesor de Latin de la Universidad de Hampden-Sydney en Virginia, encontró una de las palabras más oscuras de la lengua del latín, \"consecteur\", en un pasaje de Lorem Ipsum, y al seguir leyendo distintos textos del latín, descubrió la fuente indudable. Lorem Ipsum viene de las secciones 1.10.32 y 1.10.33 de \"de Finnibus Bonorum et Malorum\" (Los Extremos del Bien y El Mal) por Cicero, escrito en el año 45 antes de Cristo. Este libro es un tratado de teoría de éticas, muy popular durante el Renacimiento. La primera linea del Lorem Ipsum, \"Lorem ipsum dolor sit amet..\", viene de una linea en la sección 1.10.32";
+        text.setText(texto);
+        punto.setBackground(sd);
         preview.setKeepScreenOn(true);
+        Log.e("Length", "textview: "+text.length());
+        loadAnimations();
+    }
+
+    public void drawDot(){
+        sd = new ShapeDrawable(new OvalShape());
+        sd.setIntrinsicHeight(40);
+        sd.setIntrinsicWidth(40);
+        sd.getPaint().setColor(Color.parseColor("#800099ff"));
+    }
+
+    private void loadAnimations(){
+        animateBox();
+        animateOnTouch();
+        msgSpeedLess();
+        msgSpeedUp();
     }
 
     //Generamos el archivo de video
@@ -246,9 +388,7 @@ public class MainActivity extends Activity {
     }
 
     public void closeToast(){
-        if (toast != null) {
-            toast.cancel();
-        }
+        if (toast != null) {toast.cancel();}
     }
 
     public void refreshGallery(File f) {
