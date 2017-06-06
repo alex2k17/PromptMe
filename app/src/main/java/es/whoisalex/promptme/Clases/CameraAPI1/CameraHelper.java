@@ -155,6 +155,7 @@ public class CameraHelper {
         } else {
             return null;
         }
+        mediaFile.setReadable(true, false);
 
         return mediaFile;
     }

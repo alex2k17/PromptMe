@@ -1,4 +1,18 @@
 <resources>
     <string name="app_name">PromptMe</string>
     <string name="title_activity_menu">ActivityMenu</string>
+    <string name="intro_message">
+        <![CDATA[
+
+This sample uses the camera/camcorder as the A/V source for the MediaRecorder API.
+A TextureView is used as the camera preview which limits the code to API 14+. This
+can be easily replaced with a SurfaceView to run on older devices.
+
+        ]]>
+    </string>
+
+    <string name="permission_request">hola</string>
+    <string name="camera_error">error</string>
+    <string name="stop">stop</string>
+    <string name="record">recording</string>
 </resources>

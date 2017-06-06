@@ -3,12 +3,10 @@ package es.whoisalex.promptme.Clases.CameraAPI1;
 import java.io.IOException;
 import java.util.List;
 
-import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -164,4 +162,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             mCamera.startPreview();
         }
     }
+
+
 }

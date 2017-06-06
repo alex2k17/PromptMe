@@ -11,6 +11,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import es.whoisalex.promptme.Activitys.MainActivity;
+import es.whoisalex.promptme.Fragments.Camera2Fragment;
 import es.whoisalex.promptme.R;
 
 public class ScreenSplash extends Activity {
@@ -26,13 +27,14 @@ public class ScreenSplash extends Activity {
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                Intent i = null;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    //i = new Intent(getApplicationContext(),MainActivity.class);
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, Camera2Fragment.newInstance())
+                            .commit();
                 } else {
-                    i = new Intent(getApplicationContext(),MainActivity.class);
+                    Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                    startActivity(i);
                 }
-                startActivity(i);
             }
         };
         Timer timer = new Timer();

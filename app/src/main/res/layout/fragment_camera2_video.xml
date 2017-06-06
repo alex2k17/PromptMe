@@ -3,13 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/layout"
-    tools:context=".Activitys.MainActivity">
+    android:id="@+id/layout_api2"
+    tools:context=".ScreenSplash.ScreenSplash">
 
-    <SurfaceView
-        android:id="@+id/surfaceView"
+    <es.whoisalex.promptme.Clases.CameraAPI2.AutoFitTextureView
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:id="@+id/texture" />
 
     <FrameLayout
         android:id="@+id/caja"
@@ -44,7 +44,7 @@
     </FrameLayout>
 
     <ImageButton
-        android:id="@+id/imgClose"
+        android:id="@+id/imgRecord"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|bottom"

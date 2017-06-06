@@ -153,14 +153,13 @@ public class MainActivity extends Activity {
     }
 
     private void animationText(int speed, int scrollY){
-        objectAnimator = ObjectAnimator.ofInt(scroll, "scrollY", scrollY, text.length()+200).setDuration(speed);
+        objectAnimator = ObjectAnimator.ofInt(scroll, "scrollY", scrollY, height).setDuration(speed);
         objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 //Log.i("Animacion","Animacion: "+animation.getAnimatedValue());
-                if ((int) animation.getAnimatedValue()>=text.length()+100){
+                if ((int) animation.getAnimatedValue()>=height){
                     animation.cancel();
-                    Log.e("TEXTLENGTH", "VALUE: "+text.length());
                     isFinish=true;
                 }
             }
