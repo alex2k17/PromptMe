@@ -10,8 +10,8 @@ import android.view.Window;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import es.whoisalex.promptme.Activitys.Camera2Activity;
 import es.whoisalex.promptme.Activitys.MainActivity;
-import es.whoisalex.promptme.Fragments.Camera2Fragment;
 import es.whoisalex.promptme.R;
 
 public class ScreenSplash extends Activity {
@@ -28,9 +28,8 @@ public class ScreenSplash extends Activity {
             @Override
             public void run() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    getFragmentManager().beginTransaction()
-                            .replace(R.id.fragment_container, Camera2Fragment.newInstance())
-                            .commit();
+                    Intent i = new Intent(getApplicationContext(),Camera2Activity.class);
+                    startActivity(i);
                 } else {
                     Intent i = new Intent(getApplicationContext(),MainActivity.class);
                     startActivity(i);

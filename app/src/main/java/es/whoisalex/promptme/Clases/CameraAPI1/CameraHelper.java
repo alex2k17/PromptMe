@@ -138,7 +138,7 @@ public class CameraHelper {
         // Creamos la carpeta si no existe
         if (! mediaStorageDir.exists()){
             if (! mediaStorageDir.mkdirs()) {
-                Log.d("PromptMe", "Error al crear la carpeta");
+                Log.e("PromptMe", "Error al crear la carpeta");
                 return null;
             }
         }
@@ -155,7 +155,7 @@ public class CameraHelper {
         } else {
             return null;
         }
-        mediaFile.setReadable(true, false);
+        //mediaFile.setReadable(true, false);
 
         return mediaFile;
     }

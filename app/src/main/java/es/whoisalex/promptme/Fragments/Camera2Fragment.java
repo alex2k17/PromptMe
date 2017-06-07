@@ -3,7 +3,6 @@ package es.whoisalex.promptme.Fragments;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -11,6 +10,7 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -27,10 +27,13 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.media.Image;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaRecorder;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -48,7 +51,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.LinearInterpolator;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -71,7 +73,6 @@ import es.whoisalex.promptme.R;
 import static es.whoisalex.promptme.Clases.CameraAPI1.CameraHelper.MEDIA_TYPE_VIDEO;
 import static es.whoisalex.promptme.Clases.CameraAPI1.CameraHelper.getOutputMediaFile;
 
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class Camera2Fragment extends Fragment
         implements View.OnClickListener, FragmentCompat.OnRequestPermissionsResultCallback {
 
@@ -87,6 +88,8 @@ public class Camera2Fragment extends Fragment
     private static final String[] VIDEO_PERMISSIONS = {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
     static {
@@ -191,7 +194,8 @@ public class Camera2Fragment extends Fragment
     private float dX, dY;
     private int width, height;
     private boolean isFinish = false;
-    int speed=48000;
+    private boolean isSave = false;
+    int speed = 48000;
     File f;
 
     public static Camera2Fragment newInstance() {
@@ -248,7 +252,7 @@ public class Camera2Fragment extends Fragment
         imgMoreSpeed = (ImageButton) view.findViewById(R.id.imgAdd);
         imgLessSpeed = (ImageButton) view.findViewById(R.id.imgLess);
         ViewTreeObserver vto = text.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener (new ViewTreeObserver.OnGlobalLayoutListener() {
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 text.getViewTreeObserver().removeOnGlobalLayoutListener(this);
@@ -266,7 +270,7 @@ public class Camera2Fragment extends Fragment
         //view.findViewById(R.id.info).setOnClickListener(this);
     }
 
-    public void drawDot(){
+    public void drawDot() {
         sd = new ShapeDrawable(new OvalShape());
         sd.setIntrinsicHeight(40);
         sd.setIntrinsicWidth(40);
@@ -557,14 +561,12 @@ public class Camera2Fragment extends Fragment
         if (null == activity) {
             return;
         }
+        mMediaRecorder.reset();
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        if (mNextVideoAbsolutePath == null || mNextVideoAbsolutePath.isEmpty()) {
-            mNextVideoAbsolutePath = getVideoFilePath(getActivity());
-        }
-        mMediaRecorder.setOutputFile(mNextVideoAbsolutePath);
-        mMediaRecorder.setVideoEncodingBitRate(1600 * 1000);
+        saveVideo();
+        mMediaRecorder.setVideoEncodingBitRate(10000000);
         mMediaRecorder.setVideoFrameRate(30);
         mMediaRecorder.setVideoSize(mVideoSize.getWidth(), mVideoSize.getHeight());
         mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
@@ -601,6 +603,73 @@ public class Camera2Fragment extends Fragment
                 + System.currentTimeMillis() + ".mp4";
     }
 
+    public void refreshGallery(File f) {
+        Activity activity = getActivity();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Intent mediaScanIntent = new Intent(
+                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            Uri contentUri = Uri.fromFile(f); //out is your file you saved/deleted/moved/copied
+            mediaScanIntent.setData(contentUri);
+            activity.sendBroadcast(mediaScanIntent);
+        } else {
+            activity.sendBroadcast(new Intent(
+                    Intent.ACTION_MEDIA_MOUNTED,
+                    Uri.parse("file://"
+                            + Environment.getExternalStorageDirectory())));
+        }
+    }
+
+    public void durationVideo(File videoFile) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(videoFile.toString());
+        String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        long timeInmillisec = Long.parseLong(time);
+        long duration = timeInmillisec / 1000;
+        long hours = duration / 3600;
+        long minutes = (duration - hours * 3600) / 60;
+        long seconds = duration - (hours * 3600 + minutes * 60);
+        Log.i("RUTA", " Ruta: " + videoFile.toString());
+        Log.i("DURACION", " Duracion del video: " + hours + ":" + minutes + ":" + seconds + ":" + timeInmillisec);
+        if (timeInmillisec <= 0) {
+            videoFile.delete();
+            isSave = false;
+            Log.i("BORRADO", "Si");
+
+        } else {
+            isSave = true;
+            Log.i("BORRADO", "No");
+        }
+        refreshGallery(videoFile);
+    }
+
+    private List<Surface> getSurfaces() {
+        List<Surface> surfaces = new ArrayList<>();
+        try {
+            SurfaceTexture texture = mTextureView.getSurfaceTexture();
+            assert texture != null;
+            texture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+            mPreviewBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+
+            Surface previewSurface = new Surface(texture);
+            surfaces.add(previewSurface);
+            mPreviewBuilder.addTarget(previewSurface);
+
+            Surface recorderSurface = mMediaRecorder.getSurface();
+            surfaces.add(recorderSurface);
+            mPreviewBuilder.addTarget(recorderSurface);
+        } catch (CameraAccessException cae) {
+            cae.printStackTrace();
+        }
+
+        return surfaces;
+    }
+
+
+    public Surface getSurface() {
+        return mMediaRecorder.getSurface();
+    }
+
+
     private void startRecordingVideo() {
         if (null == mCameraDevice || !mTextureView.isAvailable() || null == mPreviewSize) {
             return;
@@ -626,7 +695,7 @@ public class Camera2Fragment extends Fragment
 
             // Start a capture session
             // Once the session starts, we can update the UI and start recording
-            mCameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
+            mCameraDevice.createCaptureSession(getSurfaces(), new CameraCaptureSession.StateCallback() {
 
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
@@ -636,9 +705,10 @@ public class Camera2Fragment extends Fragment
                         @Override
                         public void run() {
                             // UI
+                            closeToast();
                             imgRecord.setBackgroundResource(R.drawable.rec_on);
                             mIsRecordingVideo = true;
-
+                            msgShow();
                             // Start recording
                             mMediaRecorder.start();
                         }
@@ -654,9 +724,25 @@ public class Camera2Fragment extends Fragment
                 }
             }, mBackgroundHandler);
         } catch (CameraAccessException | IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "ERROR: " + e.getMessage());
         }
 
+    }
+
+    private void msgShow() {
+        if (objectAnimator != null) objectAnimator.cancel();
+        objectAnimator = ObjectAnimator.ofInt(scroll, "scrollY", 0, text.length() + 200).setDuration(speed);
+        objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                //Log.i("Animacion","Animacion: "+animation.getAnimatedValue());
+                if ((int) animation.getAnimatedValue() == text.length() + 100) {
+                    animation.cancel();
+                }
+            }
+        });
+        objectAnimator.setInterpolator(new LinearInterpolator());
+        objectAnimator.start();
     }
 
     private void closePreviewSession() {
@@ -674,6 +760,7 @@ public class Camera2Fragment extends Fragment
 
     private void stopRecordingVideo() {
         // UI
+        closeToast();
         mIsRecordingVideo = false;
         imgRecord.setBackgroundResource(R.drawable.rec_off);
         // Stop recording
@@ -684,16 +771,16 @@ public class Camera2Fragment extends Fragment
             e.printStackTrace();
         }
 
-        mMediaRecorder.stop();
-        mMediaRecorder.reset();
-
-        Activity activity = getActivity();
-        if (null != activity) {
-            Toast.makeText(activity, "Video saved: " + mNextVideoAbsolutePath,
-                    Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Video saved: " + mNextVideoAbsolutePath);
+        try{
+            mMediaRecorder.stop();
+        }catch(RuntimeException stopException){
+            //handle cleanup here
         }
-        mNextVideoAbsolutePath = null;
+        mMediaRecorder.reset();
+        durationVideo(f);
+        if (isSave) {
+            makeToast(getActivity(), "Guardando...", Toast.LENGTH_SHORT);
+        }
         startPreview();
     }
 
@@ -765,7 +852,7 @@ public class Camera2Fragment extends Fragment
     }
 
 
-    private void animateBox(){
+    private void animateBox() {
         punto.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
@@ -793,29 +880,29 @@ public class Camera2Fragment extends Fragment
         });
     }
 
-    private void msgSpeedUp(){
+    private void msgSpeedUp() {
         imgMoreSpeed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (objectAnimator!=null)objectAnimator.cancel();
+                if (objectAnimator != null) objectAnimator.cancel();
                 closeToast();
-                makeToast(getActivity(),"Velocidad+", 200);
-                if (speed>=4001) {
+                makeToast(getActivity(), "Velocidad+", 200);
+                if (speed >= 4001) {
                     speed -= 4000;
-                    Log.i("ClickAdd","Velocidad: "+speed);
+                    Log.i("ClickAdd", "Velocidad: " + speed);
                 }
-                Log.i("ClickAdd","ScrollY: "+scroll.getScrollY());
-                if (isFinish){
-                    isFinish=false;
+                Log.i("ClickAdd", "ScrollY: " + scroll.getScrollY());
+                if (isFinish) {
+                    isFinish = false;
                     animationText(speed, 0);
-                }else{
+                } else {
                     animationText(speed, scroll.getScrollY());
                 }
             }
         });
     }
 
-    private void msgSpeedLess(){
+    private void msgSpeedLess() {
         imgLessSpeed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -824,10 +911,10 @@ public class Camera2Fragment extends Fragment
                 makeToast(getActivity(), "Velocidad-", 200);
                 speed += 4000;
                 Log.i("ClickLess", "ScrollY: " + scroll.getScrollY());
-                if (isFinish){
-                    isFinish=false;
+                if (isFinish) {
+                    isFinish = false;
                     animationText(speed, 0);
-                }else{
+                } else {
                     animationText(speed, scroll.getScrollY());
                 }
 
@@ -835,15 +922,15 @@ public class Camera2Fragment extends Fragment
         });
     }
 
-    private void animationText(int speed, int scrollY){
+    private void animationText(int speed, int scrollY) {
         objectAnimator = ObjectAnimator.ofInt(scroll, "scrollY", scrollY, height).setDuration(speed);
         objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 //Log.i("Animacion","Animacion: "+animation.getAnimatedValue());
-                if ((int) animation.getAnimatedValue()>=height-300){
+                if ((int) animation.getAnimatedValue() >= height - 300) {
                     animation.cancel();
-                    isFinish=true;
+                    isFinish = true;
                 }
             }
         });
@@ -851,13 +938,13 @@ public class Camera2Fragment extends Fragment
         objectAnimator.start();
     }
 
-    private void animateOnTouch(){
+    private void animateOnTouch() {
         text.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()){
+                switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        if (objectAnimator!=null)objectAnimator.cancel();
+                        if (objectAnimator != null) objectAnimator.cancel();
                         break;
                     case MotionEvent.ACTION_UP:
                         animationText(speed, scroll.getScrollY());
@@ -870,7 +957,7 @@ public class Camera2Fragment extends Fragment
         });
     }
 
-    private void loadAnimations(){
+    private void loadAnimations() {
         animateBox();
         animateOnTouch();
         msgSpeedLess();
@@ -883,8 +970,10 @@ public class Camera2Fragment extends Fragment
         toast.show();
     }
 
-    public void closeToast(){
-        if (toast != null) {toast.cancel();}
+    public void closeToast() {
+        if (toast != null) {
+            toast.cancel();
+        }
     }
 
 }
