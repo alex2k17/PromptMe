@@ -189,6 +189,7 @@ public class Camera2Fragment extends Fragment
     private ImageButton imgMoreSpeed, imgLessSpeed, imgRecord;
     private ShapeDrawable sd;
     private String texto;
+    private Uri uriVideo;
     private ObjectAnimator objectAnimator;
     private Toast toast;
     private float dX, dY;
@@ -271,8 +272,8 @@ public class Camera2Fragment extends Fragment
 
     public void drawDot() {
         sd = new ShapeDrawable(new OvalShape());
-        sd.setIntrinsicHeight(40);
-        sd.setIntrinsicWidth(40);
+        sd.setIntrinsicHeight(50);
+        sd.setIntrinsicWidth(50);
         sd.getPaint().setColor(Color.parseColor("#800099ff"));
     }
 
@@ -615,6 +616,7 @@ public class Camera2Fragment extends Fragment
                     new String[]{f.toString()}, null,
                     new MediaScannerConnection.OnScanCompletedListener() {
                         public void onScanCompleted(String path, Uri uri) {
+                            uriVideo=uri;
                             Log.i("ExternalStorage", "Ruta: " + path + ":");
                             Log.i("ExternalStorage", "-> uri= " + uri);
                         }
@@ -782,7 +784,9 @@ public class Camera2Fragment extends Fragment
         mMediaRecorder.reset();
         durationVideo(f);
         if (isSave) {
+            objectAnimator.cancel();
             makeToast(getActivity(), "Guardando...", Toast.LENGTH_SHORT);
+            shareVid();
         }
         startPreview();
     }
@@ -979,4 +983,26 @@ public class Camera2Fragment extends Fragment
         }
     }
 
+    public void shareVid(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Compartir")
+                .setMessage("¿Quieres compartir el video?")
+                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent sendIntent = new Intent();
+                        sendIntent.setAction(Intent.ACTION_SEND);
+                        sendIntent.putExtra(Intent.EXTRA_STREAM, uriVideo);
+                        sendIntent.setType("video/mp4");
+                        startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.envia_A)));
+                    }
+                })
+                .setNegativeButton("Cancerlar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
 }

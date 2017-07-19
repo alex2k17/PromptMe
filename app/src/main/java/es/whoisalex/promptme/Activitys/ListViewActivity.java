@@ -135,6 +135,7 @@ public class ListViewActivity extends Activity implements Acctions {
                         }
                         Log.e("Frase añadida", promptFrase.toString());
                         cargarLista();
+                        hideKeyboard();
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -146,9 +147,7 @@ public class ListViewActivity extends Activity implements Acctions {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        getWindow().setSoftInputMode(
-                                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-                        );
+                        hideKeyboard();
                     }
                 });
         AlertDialog alert = builder.create();
@@ -188,6 +187,7 @@ public class ListViewActivity extends Activity implements Acctions {
                         dao.close();
                         Log.e("Frase editada", promptMe.toString());
                         cargarLista();
+                        hideKeyboard();
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -199,9 +199,7 @@ public class ListViewActivity extends Activity implements Acctions {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        getWindow().setSoftInputMode(
-                                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-                        );
+                        hideKeyboard();
                     }
                 });
         AlertDialog alert = builder.create();
@@ -245,5 +243,11 @@ public class ListViewActivity extends Activity implements Acctions {
 
     @Override
     public void onBackPressed() {
+    }
+
+    public void hideKeyboard(){
+        getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+        );
     }
 }

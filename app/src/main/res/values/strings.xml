@@ -16,4 +16,5 @@ can be easily replaced with a SurfaceView to run on older devices.
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
     <string name="stop">stop</string>
     <string name="record">recording</string>
+    <string name="envia_A">Enviar a..</string>
 </resources>

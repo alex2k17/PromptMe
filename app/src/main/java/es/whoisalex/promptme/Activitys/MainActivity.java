@@ -12,6 +12,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
@@ -78,6 +79,7 @@ public class MainActivity extends Activity implements OnRequestPermissionsResult
     int speed=48000;
     float dX, dY;
     String texto;
+    private Uri uriVideo;
 
     private static final int REQUEST_VIDEO_PERMISSIONS = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
@@ -119,7 +121,9 @@ public class MainActivity extends Activity implements OnRequestPermissionsResult
                     isRecording = false;
                     resetCam();
                     if (isSave) {
+                        objectAnimator.cancel();
                         makeToast(getApplicationContext(), "Guardando...", Toast.LENGTH_SHORT);
+                        shareVid();
                     }
                 } else {
                     closeToast();
@@ -422,6 +426,7 @@ public class MainActivity extends Activity implements OnRequestPermissionsResult
                 new String[]{f.toString()}, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                     public void onScanCompleted(String path, Uri uri) {
+                        uriVideo=uri;
                         Log.i("ExternalStorage", "Ruta: " + path + ":");
                         Log.i("ExternalStorage", "-> uri= " + uri);
                     }
@@ -448,5 +453,28 @@ public class MainActivity extends Activity implements OnRequestPermissionsResult
             Log.i("BORRADO","No");
         }
         refreshGallery(videoFile);
+    }
+
+    public void shareVid(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Compartir")
+                .setMessage("¿Quieres compartir el video?")
+                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent sendIntent = new Intent();
+                        sendIntent.setAction(Intent.ACTION_SEND);
+                        sendIntent.putExtra(Intent.EXTRA_STREAM, uriVideo);
+                        sendIntent.setType("video/mp4");
+                        startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.envia_A)));
+                    }
+                })
+                .setNegativeButton("Cancerlar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
     }
 }
