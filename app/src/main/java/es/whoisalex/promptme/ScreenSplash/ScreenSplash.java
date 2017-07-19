@@ -11,12 +11,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import es.whoisalex.promptme.Activitys.Camera2Activity;
+import es.whoisalex.promptme.Activitys.ListViewActivity;
 import es.whoisalex.promptme.Activitys.MainActivity;
 import es.whoisalex.promptme.R;
 
 public class ScreenSplash extends Activity {
 
-    private static final long TIME = 2700;
+    private static final long TIME = 2500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,13 +28,9 @@ public class ScreenSplash extends Activity {
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    Intent i = new Intent(getApplicationContext(),Camera2Activity.class);
-                    startActivity(i);
-                } else {
-                    Intent i = new Intent(getApplicationContext(),MainActivity.class);
-                    startActivity(i);
-                }
+                Intent i = new Intent(getApplicationContext(),ListViewActivity.class);
+                startActivity(i);
+
             }
         };
         Timer timer = new Timer();

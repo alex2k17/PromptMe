@@ -410,7 +410,7 @@ public class Camera2Fragment extends Fragment
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }
-            String cameraId = manager.getCameraIdList()[0];
+            String cameraId = manager.getCameraIdList()[1];
 
             // Choose the sizes for camera preview and video recording
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
@@ -586,7 +586,8 @@ public class Camera2Fragment extends Fragment
             Log.e("ERROR", "IllegalStateException preparando MediaRecorder: " + e.getMessage());
 
         } catch (IOException e) {
-            Log.e("ERROR", "IOException preparando MediaRecorder: " + e.getMessage());
+            Log.e(TAG, "prepare() failed");
+            System.out.println(""+e);    //to display the error
 
         }
     }
@@ -610,9 +611,17 @@ public class Camera2Fragment extends Fragment
                     Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
             Uri contentUri = Uri.fromFile(f); //out is your file you saved/deleted/moved/copied
             mediaScanIntent.setData(contentUri);
-            activity.sendBroadcast(mediaScanIntent);
+            activity.getApplicationContext().sendBroadcast(mediaScanIntent);
+            MediaScannerConnection.scanFile(activity.getApplicationContext(),
+                    new String[]{f.toString()}, null,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        public void onScanCompleted(String path, Uri uri) {
+                            Log.i("ExternalStorage", "Ruta: " + path + ":");
+                            Log.i("ExternalStorage", "-> uri= " + uri);
+                        }
+                    });
         } else {
-            activity.sendBroadcast(new Intent(
+            activity.getApplicationContext().sendBroadcast(new Intent(
                     Intent.ACTION_MEDIA_MOUNTED,
                     Uri.parse("file://"
                             + Environment.getExternalStorageDirectory())));
@@ -662,11 +671,6 @@ public class Camera2Fragment extends Fragment
         }
 
         return surfaces;
-    }
-
-
-    public Surface getSurface() {
-        return mMediaRecorder.getSurface();
     }
 
 

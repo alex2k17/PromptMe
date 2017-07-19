@@ -12,11 +12,19 @@ import es.whoisalex.promptme.R;
 
 public class Camera2Activity extends Activity {
 
+    String texto;
+
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera2);
+        texto=getIntent().getStringExtra("Frase");
+        Camera2Fragment f = new Camera2Fragment();
+        Bundle args = new Bundle();
+        args.putString("Frase", texto);
+        f.setArguments(args);
         getFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, Camera2Fragment.newInstance())
+                .replace(R.id.fragment_container, f)
                 .commit();
     }
 }

@@ -1,10 +1,18 @@
 package es.whoisalex.promptme.Activitys;
 
 
+import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
@@ -14,7 +22,13 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaRecorder;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v13.app.FragmentCompat;
+import android.support.v13.app.FragmentCompat.OnRequestPermissionsResultCallback;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -34,13 +48,15 @@ import java.io.File;
 import java.io.IOException;
 
 import es.whoisalex.promptme.Clases.CameraAPI1.CameraPreview;
+import es.whoisalex.promptme.Fragments.Camera2Fragment;
 import es.whoisalex.promptme.R;
 
 
+import static android.content.ContentValues.TAG;
 import static es.whoisalex.promptme.Clases.CameraAPI1.CameraHelper.MEDIA_TYPE_VIDEO;
 import static es.whoisalex.promptme.Clases.CameraAPI1.CameraHelper.getOutputMediaFile;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnRequestPermissionsResultCallback {
 
     private Camera mCamera = null;
     private MediaRecorder mMediaRecorder;
@@ -63,10 +79,21 @@ public class MainActivity extends Activity {
     float dX, dY;
     String texto;
 
+    private static final int REQUEST_VIDEO_PERMISSIONS = 1;
+    private static final String FRAGMENT_DIALOG = "dialog";
+
+    private static final String[] VIDEO_PERMISSIONS = {
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+        texto=getIntent().getStringExtra("Frase");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         loadPreview();
         ViewTreeObserver vto = text.getViewTreeObserver();
@@ -108,6 +135,7 @@ public class MainActivity extends Activity {
             }
         });
     }
+
 
 
     private void msgSpeedUp(){
@@ -351,7 +379,6 @@ public class MainActivity extends Activity {
         imgMoreSpeed = (ImageButton) findViewById(R.id.imgAdd);
         imgLessSpeed = (ImageButton) findViewById(R.id.imgLess);
         drawDot();
-        texto = "Al contrario del pensamiento popular, el texto de Lorem Ipsum no es simplemente texto aleatorio. Tiene sus raices en una pieza cl´sica de la literatura del Latin, que data del año 45 antes de Cristo, haciendo que este adquiera mas de 2000 años de antiguedad. Richard McClintock, un profesor de Latin de la Universidad de Hampden-Sydney en Virginia, encontró una de las palabras más oscuras de la lengua del latín, \"consecteur\", en un pasaje de Lorem Ipsum, y al seguir leyendo distintos textos del latín, descubrió la fuente indudable. Lorem Ipsum viene de las secciones 1.10.32 y 1.10.33 de \"de Finnibus Bonorum et Malorum\" (Los Extremos del Bien y El Mal) por Cicero, escrito en el año 45 antes de Cristo. Este libro es un tratado de teoría de éticas, muy popular durante el Renacimiento. La primera linea del Lorem Ipsum, \"Lorem ipsum dolor sit amet..\", viene de una linea en la sección 1.10.32";
         text.setText(texto);
         punto.setBackground(sd);
         preview.setKeepScreenOn(true);
